@@ -1,0 +1,41 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: songrenchu
+ */
+class active_groups_module extends RModule {
+
+    public $access = array('category/groups/*', 'group/find', 'group/find*');
+
+    /**
+     * Override module_content method
+     * @return string|void
+     */
+    public function module_content() {
+        $cid = Rays::router()->getParams()[0];
+
+        $groups = array();
+        if(isset($cid)&&is_numeric($cid)){
+            $category = Category::get($cid);
+
+            if ($category == null) {
+                return array();
+            }
+
+            $where = "[categoryId] in (?,";
+            $args = [$cid];
+            $subs = $category->children();
+            foreach ($subs as $sCat) {
+                $where.='?,';
+                $args[] = $sCat->id;
+            }
+            $where=substr($where,0,strlen($where)-1).')';
+            $groups = Group::find()->join("category")->order_desc("memberCount")->where($where,$args)->range(0,5);//->where($whereIds)->range(0, 5);
+        }
+        else{
+            $groups = Group::find()->join("category")->order_desc("memberCount")->range(0,5);
+        }
+
+        return $this->render('active_groups',['groups'=>$groups]);
+    }
+}

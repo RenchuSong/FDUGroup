@@ -1,0 +1,23 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: songrenchu
+ */
+class ads_module extends RModule {
+
+    public $denyAccess = array("<front>","site/*",'user/login','user/register');
+
+    /**
+     * Override module_content method
+     * @return string|void
+     */
+    public function module_content() {
+        $ads = Ads::getPublishedAds();
+        if(empty($ads)) return '';
+
+        return $this->render('ads',
+            array(
+                'ads'=>$ads,
+            ));
+    }
+}
